@@ -21,38 +21,18 @@
     <?php include "partials/_header.php"; ?>
     <?php include "partials/_dbconnect.php"; ?>
     <?php
-    $id = $_GET['catid'];
-    $sql = "SELECT * FROM `categories` WHERE category_id = $id";
+    $id = $_GET['threadid'];
+    $sql = "SELECT * FROM `threads` WHERE thread_id = $id";
     $result = mysqli_query($conn, $sql);
     while ($row = mysqli_fetch_assoc($result)) {
-        $catname = $row['category_name'];
-        $catdesc = $row['category_description'];
-    }
-    ?>
-    <?php 
-    $showAlert = false;
-    $method = $_SERVER['REQUEST_METHOD'];
-    if($method == 'POST'){
-        //insert thread into db
-        $th_title = $_POST['title'];
-        $th_desc = $_POST['desc'];
-        $sql = "INSERT INTO `threads` (`thread_title`, `thread_desc`, `thread_cat_id`, `thread_user_id`, `timestamp`) VALUES ('$th_title', '$th_desc', '$id', '0', CURRENT_TIMESTAMP)";
-        $result = mysqli_query($conn, $sql);
-        $showAlert = true;
-        if($showAlert){
-            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Success!</strong> Your thread has been added! Please wait for community to respond
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>';
-        }
+        $title = $row['thread_title'];
+        $desc = $row['thread_desc'];
     }
     ?>
     <div class="container my-4">
         <div class="jumbotron">
-            <h1 class="display-4">Welcome to <?php echo $catname; ?> Forum</h1>
-            <p class="lead"><?php echo $catdesc; ?> </p>
+            <h1 class="display-4">Welcome to <?php echo $title; ?> Forum</h1>
+            <p class="lead"><?php echo $desc; ?> </p>
             <hr class="my-4">
             <p> No Spam / Advertising / Self-promote in the forums. ...
                 Do not post copyright-infringing material. ...
@@ -61,61 +41,49 @@
                 Do not PM users asking for help. ...
                 Remain respectful of other members at all times.
             </p>
+            <p><b>Posted By:Devrath</b></p>
             <p class="lead">
                 <a class="btn btn-success btn-lg" href="#" role="button">Learn more</a>
             </p>
         </div>
     </div>
-    <div class="container">
-        <h1>Start a Discussion</h1>
-        <form method="post" action="<?php echo $_SERVER['REQUEST_URI'];?>"><!--$_SERVER['REQUEST_URI'] same page pe post krne ke liye hai aur ismein ? baad ka parameters bhi accept hoga pr agar $_SERVER['PHP_SELF'] use krenge toh ? ke baad ka truncate ho jyega-->
-            <div class="form-group">
-                <label for="title">Problem Title</label>
-                <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp" placeholder="Enter title">
-                <small id="emailHelp" class="form-text text-muted">Keep your title as short as possible</small>
-            </div>
-            <div class="form-group">
-                <label for="desc">Elaborate yout problem</label>
-                <textarea class="form-control" id="desc" name="desc" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Submit</button>
-        </form>
-    </div>
     <div class="container" id="ques">
-        <h1 class="py-2">Browse Questions</h1>
+        <h1 class="py-2">Discussion</h1>
         <!-- Use loop to iterate content -->
-        <?php
-        $id = $_GET['catid'];
-        $sql = "SELECT * FROM `threads` WHERE thread_cat_id = $id";
-        $result = mysqli_query($conn, $sql);
-        $noResult = true; //to track ki while loop ke andar gusa bhi ya nhi
-        while ($row = mysqli_fetch_assoc($result)) {
-            $noResult = false;
-            $id = $row['thread_id'];
-            $title = $row['thread_title'];
-            $desc = $row['thread_desc'];
+     <?php
+                $id = $_GET['catid'];
+                $sql = "SELECT * FROM `threads` WHERE thread_cat_id = $id";
+                $result = mysqli_query($conn, $sql);
+                $noResult = true;
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $noResult = false;
+                    $id = $row['thread_id'];
+                    $title = $row['thread_title'];
+                    $desc = $row['thread_desc'];
 
-            echo '<div class="media my-3">
+                    echo '<div class="media my-3">
             <img class="mr-3" src="./img/userDefaultImage.png" width="40px" alt="Generic placeholder image">
             <div class="media-body">
-                <h5 class="mt-0"><a class="text-dark" href="thread.php?threadid=' . $id . '">' . $title . '</a></h5>
+                <h5 class="mt-0"><a class="text-dark" href="thread.php">' . $title . '</a></h5>
                 ' . $desc . '
             </div>
         </div>';
-        }
+                }
         // echo var_dump($noResult);
-        if ($noResult) {
-            echo '<div class="jumbotron jumbotron-fluid">
+
+                if ($noResult) {
+                    echo '<div class="jumbotron jumbotron-fluid">
             <div class="container">
               <p class="display-4">No Results Found</h1>
               <p class="lead"><b> Be the first person to ask a question</p>
             </div>
           </div>';
-            echo "";
-        }
-        ?>
+                   
+                }
+                ?>
+       
+ 
     </div>
-
 
     <!-- Optional JavaScript; choose one of the two! -->
 
