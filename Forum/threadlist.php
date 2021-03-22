@@ -29,17 +29,17 @@
         $catdesc = $row['category_description'];
     }
     ?>
-    <?php 
+    <?php
     $showAlert = false;
     $method = $_SERVER['REQUEST_METHOD'];
-    if($method == 'POST'){
+    if ($method == 'POST') {
         //insert thread into db
         $th_title = $_POST['title'];
         $th_desc = $_POST['desc'];
         $sql = "INSERT INTO `threads` (`thread_title`, `thread_desc`, `thread_cat_id`, `thread_user_id`, `timestamp`) VALUES ('$th_title', '$th_desc', '$id', '0', CURRENT_TIMESTAMP)";
         $result = mysqli_query($conn, $sql);
         $showAlert = true;
-        if($showAlert){
+        if ($showAlert) {
             echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
             <strong>Success!</strong> Your thread has been added! Please wait for community to respond
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -68,7 +68,8 @@
     </div>
     <div class="container">
         <h1>Start a Discussion</h1>
-        <form method="post" action="<?php echo $_SERVER['REQUEST_URI'];?>"><!--$_SERVER['REQUEST_URI'] same page pe post krne ke liye hai aur ismein ? baad ka parameters bhi accept hoga pr agar $_SERVER['PHP_SELF'] use krenge toh ? ke baad ka truncate ho jyega-->
+        <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+            <!--$_SERVER['REQUEST_URI'] same page pe post krne ke liye hai aur ismein ? baad ka parameters bhi accept hoga pr agar $_SERVER['PHP_SELF'] use krenge toh ? ke baad ka truncate ho jyega-->
             <div class="form-group">
                 <label for="title">Problem Title</label>
                 <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp" placeholder="Enter title">
@@ -94,10 +95,12 @@
             $id = $row['thread_id'];
             $title = $row['thread_title'];
             $desc = $row['thread_desc'];
+            $thread_time = $row['timestamp'];
 
             echo '<div class="media my-3">
             <img class="mr-3" src="./img/userDefaultImage.png" width="40px" alt="Generic placeholder image">
             <div class="media-body">
+            <p class="font-weight-bold my-0">Anonymous User at '.$thread_time.'</p>
                 <h5 class="mt-0"><a class="text-dark" href="thread.php?threadid=' . $id . '">' . $title . '</a></h5>
                 ' . $desc . '
             </div>
