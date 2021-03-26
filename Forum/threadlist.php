@@ -18,8 +18,8 @@
 </head>
 
 <body>
-    <?php include "partials/_header.php"; ?>
     <?php include "partials/_dbconnect.php"; ?>
+    <?php include "partials/_header.php"; ?>
     <?php
     $id = $_GET['catid'];
     $sql = "SELECT * FROM `categories` WHERE category_id = $id";
@@ -36,7 +36,13 @@
         //insert thread into db
         $th_title = $_POST['title'];
         $th_desc = $_POST['desc'];
-        $sql = "INSERT INTO `threads` (`thread_title`, `thread_desc`, `thread_cat_id`, `thread_user_id`, `timestamp`) VALUES ('$th_title', '$th_desc', '$id', '0', CURRENT_TIMESTAMP)";
+        //Sanitizing
+        $th_title = str_replace("<", "&lt", $th_title);
+        $th_title = str_replace(">", "&gt", $th_title);
+        $th_desc = str_replace("<", "&lt", $th_desc);
+        $th_desc = str_replace(">", "&gt", $th_desc);
+        $sno = $_POST["sno"];
+        $sql = "INSERT INTO `threads` (`thread_title`, `thread_desc`, `thread_cat_id`, `thread_user_id`, `timestamp`) VALUES ('$th_title', '$th_desc', '$id', '$sno', CURRENT_TIMESTAMP)";
         $result = mysqli_query($conn, $sql);
         $showAlert = true;
         if ($showAlert) {
@@ -66,23 +72,35 @@
             </p>
         </div>
     </div>
-    <div class="container">
-        <h1>Start a Discussion</h1>
-        <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
-            <!--$_SERVER['REQUEST_URI'] same page pe post krne ke liye hai aur ismein ? baad ka parameters bhi accept hoga pr agar $_SERVER['PHP_SELF'] use krenge toh ? ke baad ka truncate ho jyega-->
-            <div class="form-group">
-                <label for="title">Problem Title</label>
-                <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp" placeholder="Enter title">
-                <small id="emailHelp" class="form-text text-muted">Keep your title as short as possible</small>
-            </div>
-            <div class="form-group">
-                <label for="desc">Elaborate yout problem</label>
-                <textarea class="form-control" id="desc" name="desc" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Submit</button>
-        </form>
-    </div>
-    <div class="container" id="ques">
+
+    <!--$_SERVER['REQUEST_URI'] same page pe post krne ke liye hai aur ismein ? baad ka parameters bhi accept hoga pr agar $_SERVER['PHP_SELF'] use krenge toh ? ke baad ka truncate ho jyega-->
+    <?php
+    if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
+
+        echo '<div class="container">
+                    <h1>Start a Discussion</h1>
+                    <form method="post" action="' . $_SERVER['REQUEST_URI'] . '">
+                    <div class="form-group">
+                    <label for="title">Problem Title</label>
+                    <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp" placeholder="Enter title">
+                    <small id="emailHelp" class="form-text text-muted">Keep your title as short as possible</small>
+                    </div>
+                    <input type="hidden" name="sno" value="' . $_SESSION['sno'] . '">
+                    <div class="form-group">
+                    <label for="desc">Elaborate yout problem</label>
+                    <textarea class="form-control" id="desc" name="desc" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                    </form>
+                </div>';
+    } else {
+        echo '<div class="container">
+                <h1>Start a Discussion</h1>
+                <p class="lead">You are not logged in. Plzz log in to start Discussion</p>
+              </div>';
+    }
+    ?>
+    <div class="container mb-5" id="ques">
         <h1 class="py-2">Browse Questions</h1>
         <!-- Use loop to iterate content -->
         <?php
@@ -96,14 +114,18 @@
             $title = $row['thread_title'];
             $desc = $row['thread_desc'];
             $thread_time = $row['timestamp'];
+            $thread_user_id = $row['thread_user_id'];
+            $sql2 = "SELECT `user_email` FROM `users` WHERE`sno` = '$thread_user_id'";
+            $result2 = mysqli_query($conn, $sql2);
+            $row2 = mysqli_fetch_assoc($result2);
+
 
             echo '<div class="media my-3">
             <img class="mr-3" src="./img/userDefaultImage.png" width="40px" alt="Generic placeholder image">
             <div class="media-body">
-            <p class="font-weight-bold my-0">Anonymous User at '.$thread_time.'</p>
+            
                 <h5 class="mt-0"><a class="text-dark" href="thread.php?threadid=' . $id . '">' . $title . '</a></h5>
-                ' . $desc . '
-            </div>
+                ' . $desc . '</div><div><p class="font-weight-bold my-0">Asked By: ' . $row2['user_email'] . ' at ' . $thread_time . '</p></div>
         </div>';
         }
         // echo var_dump($noResult);

@@ -18,8 +18,8 @@
 </head>
 
 <body>
-    <?php include "partials/_header.php"; ?>
     <?php include "partials/_dbconnect.php"; ?>
+    <?php include "partials/_header.php"; ?>
     <?php
     $id = $_GET['threadid'];
     $sql = "SELECT * FROM `threads` WHERE thread_id = $id";
@@ -27,6 +27,13 @@
     while ($row = mysqli_fetch_assoc($result)) {
         $title = $row['thread_title'];
         $desc = $row['thread_desc'];
+        $thread_user_id = $row['thread_user_id'];
+
+        //Query the users table to find out the original poster
+        $sql2 = "SELECT `user_email` FROM `users` WHERE `sno` = '$thread_user_id'";
+        $result2 = mysqli_query($conn, $sql2);
+        $row2 = mysqli_fetch_assoc($result2);
+        $posted_by = $row2['user_email'];
     }
     ?>
     <?php
@@ -35,7 +42,12 @@
     if ($method == 'POST') {
         //insert thread into db
         $th_comment = $_POST['comment'];
-        $sql = "INSERT INTO `comments` (`comment_id`, `comment_content`, `thread_id`, `comment_by`, `comment_time`) VALUES (NULL, '$th_comment', '$id', '0', CURRENT_TIMESTAMP);";
+        //sanitize our inputs taaki db mein tags,scripts ya sensitive characters as a string store naa hoo pr alternative hoga store taki woh html mein script ya html tags ke injection se bacha le
+        // XSS attack mein koi external script tumhare website page ka hissa bnati hai
+        $th_comment = str_replace("<", "&lt", $th_comment);
+        $th_comment = str_replace(">", "&gt", $th_comment);
+        $sno = $_POST["sno"];
+        $sql = "INSERT INTO `comments` (`comment_id`, `comment_content`, `thread_id`, `comment_by`, `comment_time`) VALUES (NULL, '$th_comment', '$id', '$sno', CURRENT_TIMESTAMP);";
         $result = mysqli_query($conn, $sql);
         $showAlert = true;
         if ($showAlert) {
@@ -60,27 +72,39 @@
                 Do not PM users asking for help. ...
                 Remain respectful of other members at all times.
             </p>
-            <p><b>Posted By:Devrath</b></p>
+            <p>Posted By: <em><?php echo $posted_by; ?></em></p>
             <p class="lead">
                 <a class="btn btn-success btn-lg" href="#" role="button">Learn more</a>
             </p>
         </div>
     </div>
 
-    <div class="container">
+    <!-- Agar koi banda login krke iss site ka method aur action url bnale toh woh dusri site se form create krke and sand comment iss url mein hit krake discussion daal skta hai bina iss site min login kiye kyunki humne url ke acess ko authenticate nhi kiya -->
+    <?php
+    if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
+
+        echo '<div class="container">
         <h1>Post a Comment</h1>
-        <form method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
+        <form method="post" action="' . $_SERVER['REQUEST_URI'] . '">
 
             <div class="form-group">
                 <label for="comment">Type your Comment</label>
                 <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                <input type="hidden" name="sno" value="' . $_SESSION['sno'] . '">
             </div>
             <button type="submit" class="btn btn-success">Post Comment</button>
         </form>
-    </div>
+    </div>';
+    } else {
+        echo '<div class="container">
+        <h1>Post a Comment</h1>
+                <p class="lead">You are not logged in. Plzz log in to post Comment</p>
+              </div>';
+    }
+    ?>
+    <!-- Ismein xss attack ho skta hai jisse ki script inject krdega aur aapka frontend kharab krdega jaise yha add kroge nye comments toh show hona band ho jayenge due to script toh aapko isse manually escape krana hoga jaise user ne comment mein galti se script tag daal diya toh usse baki ke comments dikhne band ho jyenge isliye aapko aise injections se bachne ke liye inhe escape krna padega taki woh isse as a string consider krre naki tag -->
 
-
-    <div class="container" id="ques">
+    <div class="container mb-5" id="ques">
         <h1 class="py-2">Discussions</h1>
         <!-- Use loop to iterate content -->
         <?php
@@ -93,12 +117,16 @@
             $id = $row['comment_id'];
             $content = $row['comment_content'];
             $comment_time = $row['comment_time'];
+            $comment_by = $row['comment_by'];
+            $sql2 = "SELECT `user_email` FROM `users` WHERE `sno` = '$comment_by'";
+            $result2 = mysqli_query($conn, $sql2);
+            $row2 = mysqli_fetch_assoc($result2);
 
 
             echo '<div class="media my-3">
             <img class="mr-3" src="./img/userDefaultImage.png" width="40px" alt="Generic placeholder image">
             <div class="media-body">
-                <p class="font-weight-bold my-0">Anonymous User at '.$comment_time.'</p>
+                <p class="font-weight-bold my-0">' . $row2['user_email'] . ' at ' . $comment_time . '</p>
                 ' . $content . '
             </div>
         </div>';

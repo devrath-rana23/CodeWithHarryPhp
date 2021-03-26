@@ -9,8 +9,9 @@
             <form action="partials/_handleLogin.php" method="post">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="loginEmail" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="loginEmail" name="loginEmail" aria-describedby="emailHelp">
+                        <label for="loginEmail" class="form-label">Username</label>
+                        <!-- <input type="email" class="form-control" id="loginEmail" name="loginEmail" aria-describedby="emailHelp"> -->
+                        <input type="text" class="form-control" id="loginEmail" name="loginEmail" aria-describedby="emailHelp">
                         <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
                     </div>
                     <div class="form-group">
